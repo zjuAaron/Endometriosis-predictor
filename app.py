@@ -111,8 +111,3 @@ def server(input, output, session):
 
 # Run the app
 app = App(app_ui, server)
-
-# Ensure app binds to the correct port
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Use environment variable PORT
-    app.run(host="0.0.0.0", port=port)
