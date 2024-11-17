@@ -7,8 +7,11 @@ import shap
 import matplotlib.pyplot as plt
 import os
 
-# Load the trained model
-model = joblib.load('model.pkl')
+import xgboost as xgb
+
+# Load the trained model from JSON
+model = xgb.XGBClassifier()
+model.load_model('model.json')
 
 # Initialize SHAP explainer
 explainer = shap.Explainer(model)
