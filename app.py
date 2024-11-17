@@ -5,6 +5,7 @@ import numpy as np
 import joblib
 import shap
 import matplotlib.pyplot as plt
+import os
 
 # Load the trained model
 model = joblib.load('model.pkl')
@@ -26,6 +27,7 @@ education_mapping = {
     'College and above': 2
 }
 
+# Define UI
 app_ui = ui.page_fluid(
     ui.h2("Endometriosis Prediction Model"),
 
@@ -54,14 +56,15 @@ app_ui = ui.page_fluid(
     ui.output_plot("shap_force_plot")
 )
 
+# Server logic
 def server(input, output, session):
+    # Helper function to process user input
     def get_input_data():
-        # Map inputs
         race_num = race_mapping[input.race()]
         education_num = education_mapping[input.education()]
 
-        # Create input data DataFrame
-        input_data = pd.DataFrame({
+        # Create a DataFrame from user input
+        return pd.DataFrame({
             'Age': [input.age()],
             'Race': [race_num],
             'Mono': [input.mono()],
@@ -73,24 +76,19 @@ def server(input, output, session):
             'Education': [education_num]
         })
 
-        return input_data
-
     @output
     @render.text
     @reactive.event(input.predict)
     def prediction_output():
         input_data = get_input_data()
 
-        # Prediction
+        # Make predictions
         prediction = model.predict(input_data)
         prediction_proba = model.predict_proba(input_data)
 
-        # Prediction result
-        if prediction[0] == 1:
-            pred_text = 'Prediction: Endometriosis'
-        else:
-            pred_text = 'Prediction: No Endometriosis'
-        prob_text = f'Risk of Endometriosis: {prediction_proba[0][1]:.2f}'
+        # Format prediction results
+        pred_text = "Prediction: Endometriosis" if prediction[0] == 1 else "Prediction: No Endometriosis"
+        prob_text = f"Risk of Endometriosis: {prediction_proba[0][1]:.2f}"
 
         return f"{pred_text}\n{prob_text}"
 
@@ -106,7 +104,12 @@ def server(input, output, session):
         # Create force plot
         shap.plots.force(shap_values[0], matplotlib=True, show=False)
         plt.tight_layout()
-        # Ensure the plot is displayed
         plt.show()
 
+# Run the app
 app = App(app_ui, server)
+
+# Ensure app binds to the correct port
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))  # Use environment variable PORT
+    app.run(host="0.0.0.0", port=port)
