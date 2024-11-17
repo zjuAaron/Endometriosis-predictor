@@ -14,7 +14,7 @@ model = xgb.XGBClassifier()
 model.load_model('model.json')
 
 # Initialize SHAP explainer
-explainer = shap.Explainer(model, masker=shap.maskers.Independent())
+explainer = shap.Explainer(model)
 
 # Define mappings
 race_mapping = {
